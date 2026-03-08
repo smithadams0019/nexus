@@ -1,0 +1,216 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" font-family="Arial, Helvetica, sans-serif">
+
+  <!-- Background -->
+  <rect width="1200" height="700" fill="#FFFFFF"/>
+
+  <!-- Title -->
+  <text x="600" y="35" text-anchor="middle" fill="#1a1a1a" font-size="24" font-weight="bold">Nexus — System Architecture</text>
+  <text x="600" y="55" text-anchor="middle" fill="#888" font-size="13">Real-Time Voice + Vision AI Copilot · Gemini Live Agent Challenge</text>
+
+  <!-- ================= COLUMN 1: USER ================= -->
+
+  <rect x="40" y="220" width="160" height="200" rx="12" fill="#E8EAF6" stroke="#5C6BC0" stroke-width="2"/>
+  <text x="120" y="248" text-anchor="middle" fill="#283593" font-size="16" font-weight="bold">User</text>
+  <line x1="55" y1="258" x2="185" y2="258" stroke="#5C6BC0" stroke-width="1" opacity="0.3"/>
+
+  <rect x="55" y="270" width="130" height="28" rx="6" fill="#fff" stroke="#9FA8DA" stroke-width="1"/>
+  <text x="120" y="289" text-anchor="middle" fill="#333" font-size="12">Camera</text>
+
+  <rect x="55" y="306" width="130" height="28" rx="6" fill="#fff" stroke="#9FA8DA" stroke-width="1"/>
+  <text x="120" y="325" text-anchor="middle" fill="#333" font-size="12">Microphone</text>
+
+  <rect x="55" y="342" width="130" height="28" rx="6" fill="#fff" stroke="#9FA8DA" stroke-width="1"/>
+  <text x="120" y="361" text-anchor="middle" fill="#333" font-size="12">Screen Share</text>
+
+  <rect x="55" y="378" width="130" height="28" rx="6" fill="#fff" stroke="#9FA8DA" stroke-width="1"/>
+  <text x="120" y="397" text-anchor="middle" fill="#333" font-size="12">Text Input</text>
+
+  <!-- ================= ARROW: User → Frontend ================= -->
+  <line x1="200" y1="320" x2="250" y2="320" stroke="#5C6BC0" stroke-width="2"/>
+  <polygon points="250,314 262,320 250,326" fill="#5C6BC0"/>
+
+  <!-- ================= COLUMN 2: FRONTEND ================= -->
+
+  <rect x="265" y="170" width="200" height="300" rx="12" fill="#E3F2FD" stroke="#1E88E5" stroke-width="2"/>
+  <text x="365" y="198" text-anchor="middle" fill="#0D47A1" font-size="16" font-weight="bold">React Frontend</text>
+  <line x1="280" y1="208" x2="450" y2="208" stroke="#1E88E5" stroke-width="1" opacity="0.3"/>
+
+  <rect x="280" y="220" width="170" height="32" rx="6" fill="#fff" stroke="#90CAF9" stroke-width="1"/>
+  <text x="365" y="241" text-anchor="middle" fill="#333" font-size="12">CameraView</text>
+
+  <rect x="280" y="260" width="170" height="32" rx="6" fill="#fff" stroke="#90CAF9" stroke-width="1"/>
+  <text x="365" y="281" text-anchor="middle" fill="#333" font-size="12">Audio Engine (PCM)</text>
+
+  <rect x="280" y="300" width="170" height="32" rx="6" fill="#fff" stroke="#90CAF9" stroke-width="1"/>
+  <text x="365" y="321" text-anchor="middle" fill="#333" font-size="12">Zustand State</text>
+
+  <rect x="280" y="340" width="170" height="32" rx="6" fill="#fff" stroke="#90CAF9" stroke-width="1"/>
+  <text x="365" y="361" text-anchor="middle" fill="#333" font-size="12">Chat / Alerts / Insights</text>
+
+  <rect x="280" y="380" width="170" height="32" rx="6" fill="#fff" stroke="#90CAF9" stroke-width="1"/>
+  <text x="365" y="401" text-anchor="middle" fill="#333" font-size="12">Controls / StatusBar</text>
+
+  <!-- Tech labels -->
+  <text x="365" y="440" text-anchor="middle" fill="#1565C0" font-size="10">React 18 · TypeScript · Tailwind · Vite</text>
+  <text x="365" y="455" text-anchor="middle" fill="#1565C0" font-size="10">Zustand · Web Audio API</text>
+
+  <!-- ================= ARROW: Frontend ↔ Backend ================= -->
+  <line x1="465" y1="305" x2="535" y2="305" stroke="#1E88E5" stroke-width="2"/>
+  <polygon points="535,299 547,305 535,311" fill="#1E88E5"/>
+  <line x1="535" y1="335" x2="465" y2="335" stroke="#43A047" stroke-width="2"/>
+  <polygon points="465,329 453,335 465,341" fill="#43A047"/>
+
+  <!-- WebSocket label -->
+  <rect x="472" y="290" width="58" height="22" rx="4" fill="#fff" stroke="#1E88E5" stroke-width="1"/>
+  <text x="501" y="305" text-anchor="middle" fill="#1E88E5" font-size="10" font-weight="bold">WSS://</text>
+
+  <text x="501" y="358" text-anchor="middle" fill="#666" font-size="9">JPEG frames</text>
+  <text x="501" y="370" text-anchor="middle" fill="#666" font-size="9">PCM audio</text>
+  <text x="501" y="382" text-anchor="middle" fill="#666" font-size="9">text messages</text>
+
+  <!-- ================= COLUMN 3: BACKEND ================= -->
+
+  <rect x="550" y="90" width="220" height="540" rx="12" fill="#FFF3E0" stroke="#FB8C00" stroke-width="2"/>
+  <text x="660" y="118" text-anchor="middle" fill="#E65100" font-size="16" font-weight="bold">FastAPI Backend</text>
+  <line x1="565" y1="128" x2="755" y2="128" stroke="#FB8C00" stroke-width="1" opacity="0.3"/>
+
+  <!-- 3 Tasks -->
+  <text x="660" y="150" text-anchor="middle" fill="#BF360C" font-size="11" font-weight="bold">3 Concurrent Async Tasks</text>
+
+  <rect x="565" y="160" width="200" height="36" rx="6" fill="#E3F2FD" stroke="#42A5F5" stroke-width="1"/>
+  <text x="665" y="177" text-anchor="middle" fill="#0D47A1" font-size="12" font-weight="bold">Task 1</text>
+  <text x="665" y="191" text-anchor="middle" fill="#1565C0" font-size="10">Gemini Receiver</text>
+
+  <rect x="565" y="204" width="200" height="36" rx="6" fill="#FFF3E0" stroke="#FFA726" stroke-width="1"/>
+  <text x="665" y="221" text-anchor="middle" fill="#E65100" font-size="12" font-weight="bold">Task 2</text>
+  <text x="665" y="235" text-anchor="middle" fill="#F57C00" font-size="10">Agent Processor (every 10s)</text>
+
+  <rect x="565" y="248" width="200" height="36" rx="6" fill="#E8F5E9" stroke="#66BB6A" stroke-width="1"/>
+  <text x="665" y="265" text-anchor="middle" fill="#1B5E20" font-size="12" font-weight="bold">Task 3</text>
+  <text x="665" y="279" text-anchor="middle" fill="#2E7D32" font-size="10">Input Router (frame/audio/text)</text>
+
+  <line x1="565" y1="295" x2="755" y2="295" stroke="#FB8C00" stroke-width="1" opacity="0.2"/>
+
+  <!-- Services -->
+  <rect x="565" y="305" width="200" height="36" rx="6" fill="#fff" stroke="#FFB74D" stroke-width="1"/>
+  <text x="665" y="327" text-anchor="middle" fill="#333" font-size="12">Gemini Live Service</text>
+
+  <rect x="565" y="349" width="200" height="36" rx="6" fill="#fff" stroke="#FFB74D" stroke-width="1"/>
+  <text x="665" y="371" text-anchor="middle" fill="#333" font-size="12">Session Manager</text>
+
+  <rect x="565" y="393" width="200" height="36" rx="6" fill="#fff" stroke="#FFB74D" stroke-width="1"/>
+  <text x="665" y="415" text-anchor="middle" fill="#333" font-size="12">Desktop Executor</text>
+
+  <line x1="565" y1="440" x2="755" y2="440" stroke="#FB8C00" stroke-width="1" opacity="0.2"/>
+
+  <!-- Agents inside backend -->
+  <text x="660" y="460" text-anchor="middle" fill="#BF360C" font-size="11" font-weight="bold">Agent System</text>
+
+  <rect x="565" y="472" width="95" height="45" rx="6" fill="#FFEBEE" stroke="#EF5350" stroke-width="1"/>
+  <text x="612" y="491" text-anchor="middle" fill="#C62828" font-size="11" font-weight="bold">Analyst</text>
+  <text x="612" y="505" text-anchor="middle" fill="#999" font-size="9">Insight cards</text>
+
+  <rect x="670" y="472" width="95" height="45" rx="6" fill="#FFFDE7" stroke="#FDD835" stroke-width="1"/>
+  <text x="717" y="491" text-anchor="middle" fill="#F57F17" font-size="11" font-weight="bold">Alert</text>
+  <text x="717" y="505" text-anchor="middle" fill="#999" font-size="9">Anomaly detect</text>
+
+  <rect x="565" y="525" width="95" height="45" rx="6" fill="#E8F5E9" stroke="#66BB6A" stroke-width="1"/>
+  <text x="612" y="544" text-anchor="middle" fill="#2E7D32" font-size="11" font-weight="bold">Memory</text>
+  <text x="612" y="558" text-anchor="middle" fill="#999" font-size="9">Firestore</text>
+
+  <rect x="670" y="525" width="95" height="45" rx="6" fill="#FCE4EC" stroke="#EC407A" stroke-width="1"/>
+  <text x="717" y="544" text-anchor="middle" fill="#AD1457" font-size="11" font-weight="bold">Action</text>
+  <text x="717" y="558" text-anchor="middle" fill="#999" font-size="9">Desktop ctrl</text>
+
+  <rect x="565" y="578" width="200" height="40" rx="6" fill="#E8EAF6" stroke="#5C6BC0" stroke-width="1"/>
+  <text x="665" y="597" text-anchor="middle" fill="#283593" font-size="11" font-weight="bold">Research Agent</text>
+  <text x="665" y="611" text-anchor="middle" fill="#999" font-size="9">Google Search grounding</text>
+
+  <!-- Tech labels -->
+  <text x="660" y="640" text-anchor="middle" fill="#E65100" font-size="10">Python 3.11 · FastAPI · Uvicorn · google-genai</text>
+
+  <!-- ================= ARROW: Backend → Gemini ================= -->
+  <line x1="770" y1="200" x2="870" y2="200" stroke="#1E88E5" stroke-width="2"/>
+  <polygon points="870,194 882,200 870,206" fill="#1E88E5"/>
+
+  <line x1="870" y1="240" x2="770" y2="240" stroke="#43A047" stroke-width="2"/>
+  <polygon points="770,234 758,240 770,246" fill="#43A047"/>
+
+  <text x="822" y="190" text-anchor="middle" fill="#1E88E5" font-size="9">audio + video</text>
+  <text x="822" y="255" text-anchor="middle" fill="#43A047" font-size="9">audio stream</text>
+
+  <!-- ================= COLUMN 4: GEMINI LIVE API ================= -->
+
+  <rect x="885" y="110" width="270" height="200" rx="12" fill="#E8F5E9" stroke="#43A047" stroke-width="2"/>
+
+  <!-- Google dots -->
+  <circle cx="910" cy="140" r="5" fill="#4285F4"/>
+  <circle cx="923" cy="140" r="5" fill="#EA4335"/>
+  <circle cx="936" cy="140" r="5" fill="#FBBC04"/>
+  <circle cx="949" cy="140" r="5" fill="#34A853"/>
+
+  <text x="1020" y="145" text-anchor="middle" fill="#1B5E20" font-size="16" font-weight="bold">Gemini Live API</text>
+  <line x1="900" y1="158" x2="1140" y2="158" stroke="#43A047" stroke-width="1" opacity="0.3"/>
+
+  <text x="1020" y="180" text-anchor="middle" fill="#2E7D32" font-size="12">gemini-2.5-flash-native-audio-latest</text>
+
+  <rect x="900" y="195" width="110" height="30" rx="6" fill="#fff" stroke="#A5D6A7" stroke-width="1"/>
+  <text x="955" y="215" text-anchor="middle" fill="#333" font-size="11">Audio + Video In</text>
+
+  <rect x="1020" y="195" width="110" height="30" rx="6" fill="#fff" stroke="#A5D6A7" stroke-width="1"/>
+  <text x="1075" y="215" text-anchor="middle" fill="#333" font-size="11">Audio Out</text>
+
+  <rect x="900" y="237" width="230" height="30" rx="6" fill="#fff" stroke="#A5D6A7" stroke-width="1"/>
+  <text x="1015" y="257" text-anchor="middle" fill="#333" font-size="11">Bidirectional · Persistent · Voice: Puck</text>
+
+  <text x="1020" y="290" text-anchor="middle" fill="#388E3C" font-size="11">System instruction: adaptive persona</text>
+
+  <!-- ================= COLUMN 4: GOOGLE CLOUD ================= -->
+
+  <rect x="885" y="370" width="270" height="130" rx="12" fill="#E0F2F1" stroke="#00897B" stroke-width="2"/>
+  <text x="1020" y="398" text-anchor="middle" fill="#004D40" font-size="16" font-weight="bold">Google Cloud</text>
+  <line x1="900" y1="408" x2="1140" y2="408" stroke="#00897B" stroke-width="1" opacity="0.3"/>
+
+  <rect x="900" y="420" width="110" height="32" rx="6" fill="#fff" stroke="#80CBC4" stroke-width="1"/>
+  <text x="955" y="441" text-anchor="middle" fill="#333" font-size="12">Cloud Run</text>
+
+  <rect x="1020" y="420" width="110" height="32" rx="6" fill="#fff" stroke="#80CBC4" stroke-width="1"/>
+  <text x="1075" y="441" text-anchor="middle" fill="#333" font-size="12">Cloud Build</text>
+
+  <rect x="900" y="460" width="110" height="32" rx="6" fill="#fff" stroke="#80CBC4" stroke-width="1"/>
+  <text x="955" y="481" text-anchor="middle" fill="#333" font-size="12">Firestore</text>
+
+  <rect x="1020" y="460" width="110" height="32" rx="6" fill="#fff" stroke="#80CBC4" stroke-width="1"/>
+  <text x="1075" y="481" text-anchor="middle" fill="#333" font-size="12">Container Registry</text>
+
+  <!-- Arrow: Backend → Cloud -->
+  <line x1="770" y1="370" x2="820" y2="370" stroke="#00897B" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <line x1="820" y1="370" x2="820" y2="435" stroke="#00897B" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <line x1="820" y1="435" x2="883" y2="435" stroke="#00897B" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <polygon points="883,429 895,435 883,441" fill="#00897B"/>
+  <text x="838" y="400" fill="#00897B" font-size="9">deployed on</text>
+
+  <!-- Arrow: Memory → Firestore -->
+  <line x1="660" y1="570" x2="660" y2="650" stroke="#F9A825" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <line x1="660" y1="650" x2="940" y2="650" stroke="#F9A825" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <line x1="940" y1="650" x2="940" y2="495" stroke="#F9A825" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <polygon points="934,495 940,483 946,495" fill="#F9A825"/>
+  <text x="800" y="665" text-anchor="middle" fill="#F9A825" font-size="10">stores memory</text>
+
+  <!-- ================= COLUMN 4: DESKTOP ================= -->
+
+  <rect x="885" y="540" width="270" height="90" rx="12" fill="#FFEBEE" stroke="#E53935" stroke-width="2"/>
+  <text x="1020" y="568" text-anchor="middle" fill="#B71C1C" font-size="16" font-weight="bold">User's Desktop</text>
+  <line x1="900" y1="578" x2="1140" y2="578" stroke="#E53935" stroke-width="1" opacity="0.3"/>
+
+  <text x="1020" y="600" text-anchor="middle" fill="#333" font-size="12">click · type · hotkey · scroll · open app/url</text>
+  <text x="1020" y="618" text-anchor="middle" fill="#999" font-size="10">via PyAutoGUI (screenshot → action plan → execute)</text>
+
+  <!-- Arrow: Action Agent → Desktop -->
+  <line x1="765" y1="548" x2="820" y2="548" stroke="#E53935" stroke-width="1.5"/>
+  <line x1="820" y1="548" x2="820" y2="580" stroke="#E53935" stroke-width="1.5"/>
+  <line x1="820" y1="580" x2="883" y2="580" stroke="#E53935" stroke-width="1.5"/>
+  <polygon points="883,574 895,580 883,586" fill="#E53935"/>
+  <text x="810" y="540" fill="#E53935" font-size="9">actions</text>
+
+</svg>

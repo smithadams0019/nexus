@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Building Nexus</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Building Nexus</h1>
+</header>
+<h1
+id="building-nexus-a-real-time-voice-vision-ai-copilot-with-googles-gemini-live-api">Building
+Nexus: A Real-Time Voice + Vision AI Copilot with Google’s Gemini Live
+API</h1>
+<p><em>How we built an AI assistant that can see your screen, hear your
+voice, and control your desktop — all in real time.</em></p>
+<hr />
+<p>What if your AI assistant could actually <em>see</em> what you’re
+looking at?</p>
+<p>Not “paste a screenshot and wait 30 seconds.” Not “describe what’s on
+your screen.” But genuinely watch your screen in real time, listen to
+your voice, and respond instantly with spoken words — like a
+knowledgeable colleague sitting next to you.</p>
+<p>That’s what we built with <strong>Nexus</strong>.</p>
+<p>Nexus is a real-time voice and vision AI copilot powered by Google’s
+Gemini Live API. You open it in your browser, share your camera or
+screen, and start talking. The AI sees everything, hears everything, and
+responds with natural speech. No typing. No waiting. Just point and
+talk.</p>
+<p>In this post, I’ll walk through how we built it, the technical
+challenges we faced, and what we learned about working with one of the
+newest and most powerful APIs in AI.</p>
+<hr />
+<h2 id="the-problem-with-current-ai-assistants">The Problem with Current
+AI Assistants</h2>
+<p>Most AI tools today work like this:</p>
+<ol type="1">
+<li>You type a prompt</li>
+<li>You wait</li>
+<li>You read a wall of text</li>
+<li>You copy-paste the relevant part</li>
+</ol>
+<p>Even the “multimodal” ones usually mean: upload an image, wait for
+processing, get text back.</p>
+<p>This is fine for many tasks. But it completely breaks down for
+anything that requires <em>context</em> — reviewing code on your screen,
+analyzing a dashboard, understanding what’s happening in front of your
+camera. You end up spending more time explaining what you’re looking at
+than actually getting help.</p>
+<p>The Gemini Live API changes this. It supports <strong>bidirectional
+audio and video streaming</strong> in a single persistent session. Audio
+in, audio out, video in — all at the same time, all in real time. This
+is the foundation that made Nexus possible.</p>
+<hr />
+<h2 id="what-nexus-does">What Nexus Does</h2>
+<p>When you open Nexus and start a session, here’s what happens:</p>
+<p><strong>You share your camera or screen.</strong> Nexus captures JPEG
+frames every 2 seconds and streams them to the backend.</p>
+<p><strong>You talk naturally.</strong> Your microphone captures audio
+at 16kHz PCM and streams it continuously. No push-to-talk button. Just
+speak.</p>
+<p><strong>Nexus responds with voice.</strong> Gemini processes your
+audio and video input together and responds with natural speech,
+streamed back and played through your browser’s Web Audio API.</p>
+<p><strong>Nexus adapts to what it sees.</strong> The system instruction
+tells Gemini to adapt its persona based on the visual context: - See a
+dashboard? It becomes a data analyst. - See source code? It becomes a
+code reviewer. - See a document? It becomes an editor. - See a
+real-world scene? It becomes an informative observer.</p>
+<p><strong>Background agents work silently.</strong> While you’re
+talking to Nexus, background agents analyze your screen every 10
+seconds: - The <strong>Alert Agent</strong> flags errors, warnings, and
+anomalies - The <strong>Analyst Agent</strong> generates contextual
+insight cards - The <strong>Memory Agent</strong> stores conversation
+context in Google Cloud Firestore</p>
+<p><strong>Desktop control.</strong> When you share your screen and type
+a command like “click on the search bar and type Ghana,” the
+<strong>Action Planner</strong> agent analyzes your screenshot with
+Gemini 2.5 Flash, determines the exact pixel coordinates, and executes
+the action on your desktop via PyAutoGUI.</p>
+<hr />
+<h2 id="the-architecture">The Architecture</h2>
+<p>Here’s how everything connects:</p>
+<pre><code>User (Camera/Mic/Screen)
+    ↓ WebSocket (wss://)
+React Frontend (Vite + Zustand)
+    ↓ WebSocket (wss://)
+FastAPI Backend (Python)
+    ├── Task 1: Gemini Receiver (streams responses back)
+    ├── Task 2: Agent Processor (insights + alerts every 10s)
+    └── Task 3: Input Router (forwards frames/audio/text)
+            ↓
+    Gemini Live API (bidirectional audio + video)
+    Agent System (Analyst, Alert, Memory, Action Planner)
+    Google Cloud (Cloud Run, Firestore)
+    Desktop Executor (PyAutoGUI)</code></pre>
+<p>The key insight: <strong>three concurrent async tasks</strong> run
+per WebSocket connection. This means the AI can receive your input,
+process agent insights, and stream responses back — all simultaneously
+without blocking.</p>
+<hr />
+<h2 id="deep-dive-connecting-to-the-gemini-live-api">Deep Dive:
+Connecting to the Gemini Live API</h2>
+<p>This was the most challenging part of the build. The Gemini Live API
+is relatively new, and we hit several surprises.</p>
+<h3 id="establishing-the-connection">Establishing the Connection</h3>
+<p>The <code>google-genai</code> SDK provides
+<code>client.aio.live.connect()</code>, which returns an async context
+manager — not an awaitable. This tripped us up initially:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># This is WRONG</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>._session <span class="op">=</span> <span class="cf">await</span> <span class="va">self</span>._client.aio.live.<span class="ex">connect</span>(model<span class="op">=</span>model, config<span class="op">=</span>config)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># This is RIGHT</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>._ctx_manager <span class="op">=</span> <span class="va">self</span>._client.aio.live.<span class="ex">connect</span>(model<span class="op">=</span>model, config<span class="op">=</span>config)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>._session <span class="op">=</span> <span class="cf">await</span> <span class="va">self</span>._ctx_manager.<span class="fu">__aenter__</span>()</span></code></pre></div>
+<h3 id="streaming-input">Streaming Input</h3>
+<p>Video frames and audio are sent using
+<code>send_realtime_input()</code>:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Send a JPEG frame</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> session.send_realtime_input(</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    video<span class="op">=</span>types.Blob(mime_type<span class="op">=</span><span class="st">&quot;image/jpeg&quot;</span>, data<span class="op">=</span>frame_bytes),</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Send PCM audio</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> session.send_realtime_input(</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    audio<span class="op">=</span>types.Blob(mime_type<span class="op">=</span><span class="st">&quot;audio/pcm;rate=16000&quot;</span>, data<span class="op">=</span>audio_bytes),</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p>Text messages use a different method:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> session.send_client_content(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    turns<span class="op">=</span>types.Content(role<span class="op">=</span><span class="st">&quot;user&quot;</span>, parts<span class="op">=</span>[types.Part(text<span class="op">=</span>text)]),</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    turn_complete<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<h3 id="the-multi-turn-problem">The Multi-Turn Problem</h3>
+<p>This one cost us hours. <code>session.receive()</code> is an async
+iterator that yields responses — but it <strong>exits after each turn
+completes</strong>. Our first implementation only worked for one
+exchange:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># BROKEN: Only handles one turn</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="cf">for</span> response <span class="kw">in</span> session.receive():</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># process response...</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># After turn_complete, the iterator ends. Silence forever.</span></span></code></pre></div>
+<p>The fix: wrap it in a loop:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># FIXED: Handles multiple turns</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> <span class="kw">not</span> <span class="va">self</span>._closed:</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">async</span> <span class="cf">for</span> response <span class="kw">in</span> session.receive():</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        <span class="co"># process audio, text, turn_complete...</span></span></code></pre></div>
+<h3 id="audio-only-modality">Audio-Only Modality</h3>
+<p>The model <code>gemini-2.5-flash-native-audio-latest</code> only
+supports <code>response_modalities=["AUDIO"]</code>. You cannot combine
+<code>["AUDIO", "TEXT"]</code>. This has a major implication:
+<strong>the model can speak but cannot output structured
+text.</strong></p>
+<p>This meant our original plan — having Gemini output action commands
+as JSON in its response — was impossible. The model would <em>say</em>
+“Sure, I’ll click that for you” but couldn’t output a structured
+<code>{"type": "click", "x": 500, "y": 300}</code>.</p>
+<p>Our solution: a separate <strong>Action Planner</strong> agent.</p>
+<hr />
+<h2 id="the-action-planner-making-desktop-control-work">The Action
+Planner: Making Desktop Control Work</h2>
+<p>Since the Live API can only respond with audio, we needed a different
+approach for desktop control. The Action Planner is a separate Gemini
+2.5 Flash call (non-live, standard API) that:</p>
+<ol type="1">
+<li>Takes the latest screenshot (base64-encoded JPEG)</li>
+<li>Takes the user’s text request</li>
+<li>Returns a JSON array of precise desktop actions</li>
+</ol>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> ActionPlanner:</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">async</span> <span class="kw">def</span> plan_actions(<span class="va">self</span>, screenshot_b64: <span class="bu">str</span>, user_request: <span class="bu">str</span>):</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>        screenshot_bytes <span class="op">=</span> base64.b64decode(screenshot_b64)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>        response <span class="op">=</span> <span class="cf">await</span> <span class="va">self</span>._client.aio.models.generate_content(</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>            model<span class="op">=</span><span class="st">&quot;gemini-2.5-flash&quot;</span>,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>            contents<span class="op">=</span>[</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>                types.Content(role<span class="op">=</span><span class="st">&quot;user&quot;</span>, parts<span class="op">=</span>[</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>                    types.Part(inline_data<span class="op">=</span>types.Blob(</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>                        mime_type<span class="op">=</span><span class="st">&quot;image/jpeg&quot;</span>,</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>                        data<span class="op">=</span>screenshot_bytes,</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>                    )),</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>                    types.Part(text<span class="op">=</span>ACTION_PROMPT.<span class="bu">format</span>(request<span class="op">=</span>user_request)),</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>                ])</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>            ],</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Parse JSON array of actions</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> json.loads(response.text.strip())</span></code></pre></div>
+<p>These actions are then executed by the Desktop Executor using
+PyAutoGUI:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> execute_action(action):</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    pag <span class="op">=</span> _get_pyautogui()</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> action[<span class="st">&quot;type&quot;</span>] <span class="op">==</span> <span class="st">&quot;click&quot;</span>:</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>        pag.moveTo(action[<span class="st">&quot;x&quot;</span>], action[<span class="st">&quot;y&quot;</span>], duration<span class="op">=</span><span class="fl">0.15</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>        pag.click(action[<span class="st">&quot;x&quot;</span>], action[<span class="st">&quot;y&quot;</span>])</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> action[<span class="st">&quot;type&quot;</span>] <span class="op">==</span> <span class="st">&quot;type&quot;</span>:</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>        pag.typewrite(action[<span class="st">&quot;text&quot;</span>], interval<span class="op">=</span><span class="fl">0.03</span>)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> action[<span class="st">&quot;type&quot;</span>] <span class="op">==</span> <span class="st">&quot;hotkey&quot;</span>:</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>        pag.hotkey(<span class="op">*</span>action[<span class="st">&quot;keys&quot;</span>])</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ... scroll, open_url, open_app, etc.</span></span></code></pre></div>
+<p>The flow in the WebSocket handler:</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="cf">elif</span> msg_type <span class="op">==</span> <span class="st">&quot;text&quot;</span>:</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">await</span> gemini.send_text(data)  <span class="co"># Send to Gemini for voice response</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> last_frame[<span class="dv">0</span>] <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:  <span class="co"># Screen is being shared</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>        actions <span class="op">=</span> <span class="cf">await</span> action_planner.plan_actions(last_frame[<span class="dv">0</span>], data)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> action <span class="kw">in</span> actions:</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>            result <span class="op">=</span> <span class="cf">await</span> execute_action(action)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>            <span class="cf">await</span> ws.send_json({</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;type&quot;</span>: <span class="st">&quot;action_result&quot;</span>,</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;action&quot;</span>: action[<span class="st">&quot;type&quot;</span>],</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;success&quot;</span>: result[<span class="st">&quot;success&quot;</span>],</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>                <span class="st">&quot;message&quot;</span>: result[<span class="st">&quot;message&quot;</span>],</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>            })</span></code></pre></div>
+<p>Gemini voices the response. The Action Planner executes it. Both
+happen simultaneously.</p>
+<hr />
+<h2 id="real-time-audio-in-the-browser">Real-Time Audio in the
+Browser</h2>
+<p>Getting smooth audio playback from streaming PCM chunks was trickier
+than expected.</p>
+<p>Gemini sends audio as raw PCM bytes (24kHz). Each chunk arrives
+independently. If you just play them immediately, you get gaps and
+clicks between chunks. If you buffer too much, you get noticeable
+latency.</p>
+<p>The solution: <strong>sequential scheduling</strong> with Web Audio
+API.</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> nextPlayTime <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">function</span> <span class="fu">playAudioChunk</span>(audioContext<span class="op">:</span> <span class="bu">AudioContext</span><span class="op">,</span> base64Data<span class="op">:</span> <span class="dt">string</span>) {</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> pcmBytes <span class="op">=</span> <span class="fu">atob</span>(base64Data)<span class="op">;</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> samples <span class="op">=</span> <span class="kw">new</span> <span class="bu">Float32Array</span>(pcmBytes<span class="op">.</span><span class="at">length</span> <span class="op">/</span> <span class="dv">2</span>)<span class="op">;</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Convert PCM16 to Float32</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">let</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> samples<span class="op">.</span><span class="at">length</span><span class="op">;</span> i<span class="op">++</span>) {</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> sample <span class="op">=</span> (pcmBytes<span class="op">.</span><span class="fu">charCodeAt</span>(i <span class="op">*</span> <span class="dv">2</span>) <span class="op">|</span> (pcmBytes<span class="op">.</span><span class="fu">charCodeAt</span>(i <span class="op">*</span> <span class="dv">2</span> <span class="op">+</span> <span class="dv">1</span>) <span class="op">&lt;&lt;</span> <span class="dv">8</span>))<span class="op">;</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    samples[i] <span class="op">=</span> (sample <span class="op">&gt;</span> <span class="dv">32767</span> <span class="op">?</span> sample <span class="op">-</span> <span class="dv">65536</span> <span class="op">:</span> sample) <span class="op">/</span> <span class="dv">32768</span><span class="op">;</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> buffer <span class="op">=</span> audioContext<span class="op">.</span><span class="fu">createBuffer</span>(<span class="dv">1</span><span class="op">,</span> samples<span class="op">.</span><span class="at">length</span><span class="op">,</span> <span class="dv">24000</span>)<span class="op">;</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>  buffer<span class="op">.</span><span class="fu">copyToChannel</span>(samples<span class="op">,</span> <span class="dv">0</span>)<span class="op">;</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> source <span class="op">=</span> audioContext<span class="op">.</span><span class="fu">createBufferSource</span>()<span class="op">;</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>  source<span class="op">.</span><span class="at">buffer</span> <span class="op">=</span> buffer<span class="op">;</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>  source<span class="op">.</span><span class="fu">connect</span>(audioContext<span class="op">.</span><span class="at">destination</span>)<span class="op">;</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Schedule this chunk right after the previous one</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> now <span class="op">=</span> audioContext<span class="op">.</span><span class="at">currentTime</span><span class="op">;</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> startTime <span class="op">=</span> <span class="bu">Math</span><span class="op">.</span><span class="fu">max</span>(now<span class="op">,</span> nextPlayTime)<span class="op">;</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>  source<span class="op">.</span><span class="fu">start</span>(startTime)<span class="op">;</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>  nextPlayTime <span class="op">=</span> startTime <span class="op">+</span> buffer<span class="op">.</span><span class="at">duration</span><span class="op">;</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Each chunk is scheduled to start exactly when the previous one ends.
+No gaps, no overlap, no clicks.</p>
+<hr />
+<h2 id="background-agents-intelligence-without-asking">Background
+Agents: Intelligence Without Asking</h2>
+<p>One of the most compelling features of Nexus is that it doesn’t wait
+for you to ask questions. The Agent Processor runs as a background task
+every 10 seconds, analyzing the latest frame with two specialized
+agents:</p>
+<p><strong>Alert Agent</strong> — monitors for anything that looks
+wrong: - Error messages on screen - Security warnings - Metric spikes in
+dashboards - Build failures - Low disk space warnings</p>
+<p>When it detects something, it sends an alert to the browser with a
+severity level (info, warning, critical). Critical alerts pulse red in
+the UI. You didn’t ask — Nexus just noticed.</p>
+<p><strong>Analyst Agent</strong> — generates contextual insight cards:
+- Summarizes what’s on screen - Identifies trends in data - Suggests
+actions - Categorizes as anomaly, insight, suggestion, or warning</p>
+<p>Both agents use <code>gemini-2.5-flash</code> for fast inference and
+are designed to fail silently — a background agent crashing should never
+kill the main conversation.</p>
+<hr />
+<h2 id="deployment-one-container-everything-included">Deployment: One
+Container, Everything Included</h2>
+<p>We wanted the simplest possible deployment. The solution: a
+<strong>multi-stage Docker build</strong> that packages both the React
+dashboard and Python backend into a single container.</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode dockerfile"><code class="sourceCode dockerfile"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Stage 1: Build React dashboard</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> node:20-slim <span class="kw">AS</span> dashboard-build</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="kw">WORKDIR</span> /dashboard</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="kw">COPY</span> dashboard/ .</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="kw">RUN</span> <span class="ex">npm</span> install <span class="kw">&amp;&amp;</span> <span class="ex">npm</span> run build</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Stage 2: Python backend + static files</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> python:3.11-slim</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="kw">WORKDIR</span> /app</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="kw">COPY</span> backend/requirements.txt .</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="kw">RUN</span> <span class="ex">pip</span> install <span class="at">--no-cache-dir</span> <span class="at">-r</span> requirements.txt</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="kw">COPY</span> backend/ .</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="kw">COPY</span> <span class="op">--from=dashboard-build</span> /dashboard/dist /app/static</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="kw">CMD</span> [<span class="st">&quot;uvicorn&quot;</span>, <span class="st">&quot;main:app&quot;</span>, <span class="st">&quot;--host&quot;</span>, <span class="st">&quot;0.0.0.0&quot;</span>, <span class="st">&quot;--port&quot;</span>, <span class="st">&quot;8080&quot;</span>]</span></code></pre></div>
+<p>FastAPI serves the built dashboard as static files, with a catch-all
+route for SPA routing. One image, one Cloud Run service, everything
+works.</p>
+<p>Deployment is automated:</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">GOOGLE_CLOUD_PROJECT</span><span class="op">=</span>your-project</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">GEMINI_API_KEY</span><span class="op">=</span>your-key</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> deploy/cloud-run.sh</span></code></pre></div>
+<p>Cloud Run gives us auto-scaling (0 to 3 instances), session affinity
+for WebSocket connections, and HTTPS out of the box — which is required
+for browser camera and microphone access.</p>
+<hr />
+<h2 id="lessons-learned">Lessons Learned</h2>
+<p><strong>1. The Gemini Live API is powerful but young.</strong> Model
+names, API versions, and SDK methods may change. We went through
+multiple model names and API versions before finding the right
+combination. Build with flexibility.</p>
+<p><strong>2. Audio-only modality requires creative
+workarounds.</strong> If you need structured output alongside voice
+responses, use a separate non-live API call. The pattern of “Live API
+for conversation + Flash API for structured tasks” works well.</p>
+<p><strong>3. WebSocket lifecycle management matters.</strong> Every
+connection spawns multiple async tasks and a Gemini session. Proper
+cleanup in <code>finally</code> blocks is essential, or you’ll leak
+connections.</p>
+<p><strong>4. Background agents add massive value with minimal
+complexity.</strong> Running a frame analysis every 10 seconds is cheap
+(one API call) but makes the product feel genuinely intelligent. The AI
+notices things before you do.</p>
+<p><strong>5. Browser audio APIs are finicky.</strong> Sequential
+scheduling with <code>AudioBufferSourceNode</code> is the way to go for
+streaming PCM playback. Don’t try to use <code>AudioWorklet</code> for
+simple playback — it’s overkill.</p>
+<hr />
+<h2 id="whats-next">What’s Next</h2>
+<ul>
+<li><strong>Voice-triggered desktop actions</strong> — transcribe spoken
+commands and route them to the Action Planner</li>
+<li><strong>Multi-session collaboration</strong> — share a Nexus session
+with teammates</li>
+<li><strong>Plugin system</strong> — custom agents for Slack, Jira,
+email, and more</li>
+<li><strong>Mobile-native app</strong> — deeper camera and microphone
+integration</li>
+</ul>
+<hr />
+<h2 id="try-it">Try It</h2>
+<p><strong>Live demo:</strong> <a
+href="https://nexus-backend-cxotjai2ta-uc.a.run.app">nexus-backend-cxotjai2ta-uc.a.run.app</a></p>
+<p><strong>Source code:</strong> <a
+href="https://github.com/smithadams0019/nexus">github.com/smithadams0019/nexus</a></p>
+<p>Nexus was built for the <a
+href="https://geminiliveagentchallenge.devpost.com/">Gemini Live Agent
+Challenge</a> in the <strong>Live Agents</strong> category. If you’re
+interested in building with the Gemini Live API, the source code is
+fully open — clone it, run it, break it, improve it.</p>
+<hr />
+<p><em>Built with Google Gemini Live API, FastAPI, React, and deployed
+on Google Cloud Run.</em></p>
+</body>
+</html>
