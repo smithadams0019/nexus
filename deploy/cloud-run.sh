@@ -3,7 +3,7 @@ set -euo pipefail
 
 # ──────────────────────────────────────────────────────────────
 # Nexus — Google Cloud Run Deployment Script
-# Deploys the FastAPI backend with WebSocket support
+# Deploys backend + dashboard as a single service
 # ──────────────────────────────────────────────────────────────
 
 # Configuration (override via environment)
@@ -20,7 +20,7 @@ if [[ -z "${GEMINI_API_KEY:-}" ]]; then
 fi
 
 if ! command -v gcloud &>/dev/null; then
-    echo "ERROR: gcloud CLI is not installed. Install it from https://cloud.google.com/sdk/docs/install"
+    echo "ERROR: gcloud CLI is not installed."
     exit 1
 fi
 
@@ -33,15 +33,17 @@ echo "==> Enabling required GCP APIs..."
 gcloud services enable \
     run.googleapis.com \
     cloudbuild.googleapis.com \
-    firestore.googleapis.com
+    artifactregistry.googleapis.com
 
-# ── Build container image ─────────────────────────────────────
+# ── Build container image (from repo root) ────────────────────
 
-echo "==> Building container image: ${IMAGE}"
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+echo "==> Building container image: ${IMAGE} (from ${REPO_ROOT})"
 gcloud builds submit \
     --tag "${IMAGE}" \
     --project "${PROJECT_ID}" \
-    ./backend
+    --timeout=600 \
+    "${REPO_ROOT}"
 
 # ── Deploy to Cloud Run ──────────────────────────────────────
 
@@ -57,7 +59,7 @@ gcloud run deploy "${SERVICE_NAME}" \
     --max-instances 3 \
     --session-affinity \
     --allow-unauthenticated \
-    --set-env-vars "GEMINI_API_KEY=${GEMINI_API_KEY},GOOGLE_CLOUD_PROJECT=${PROJECT_ID},REDIS_URL=${REDIS_URL:-}"
+    --set-env-vars "GEMINI_API_KEY=${GEMINI_API_KEY}"
 
 # ── Retrieve service URL ─────────────────────────────────────
 
@@ -67,7 +69,7 @@ SERVICE_URL=$(gcloud run services describe "${SERVICE_NAME}" \
 
 echo ""
 echo "============================================"
-echo "  Nexus backend deployed successfully!"
+echo "  Nexus deployed successfully!"
 echo "  URL: ${SERVICE_URL}"
 echo "============================================"
 echo ""

@@ -30,7 +30,7 @@ export function TextInput({ onSend, disabled }: TextInputProps) {
         value={text}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder={disabled ? 'Connect to start...' : 'Type a message...'}
+        placeholder={disabled ? 'Connect to start...' : 'Type a message or action (e.g. "open Chrome")'}
         disabled={disabled}
         className="flex-1 bg-nexus-dark/50 border border-nexus-border rounded-full px-4 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-nexus-primary/50 transition-colors disabled:opacity-40"
       />

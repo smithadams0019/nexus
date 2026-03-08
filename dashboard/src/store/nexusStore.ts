@@ -61,6 +61,11 @@ function getWsUrl(): string {
   if (backendUrl) {
     return backendUrl.replace(/^http/, 'ws');
   }
+  // In production, use the same host (wss:// for HTTPS, ws:// for HTTP)
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${proto}//${window.location.host}`;
+  }
   return 'ws://localhost:8000';
 }
 
@@ -124,6 +129,11 @@ export const useNexusStore = create<NexusState>((set, get) => ({
               severity: data.severity || 'info',
               message: data.message || data.data,
             });
+            break;
+          }
+          case 'action_result': {
+            const icon = data.success ? '✓' : '✗';
+            get().addMessage('assistant', `${icon} Action: ${data.action} — ${data.message}`);
             break;
           }
         }

@@ -43,7 +43,7 @@ class ResearchAgent:
         if not api_key:
             raise ValueError("GEMINI_API_KEY environment variable is not set")
         self._client = genai.Client(api_key=api_key)
-        self._model = "gemini-2.0-flash"
+        self._model = "gemini-2.5-flash"
         self._search_tool = types.Tool(
             google_search=types.GoogleSearch()
         )

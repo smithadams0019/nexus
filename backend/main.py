@@ -6,19 +6,25 @@ import asyncio
 import base64
 import json
 import logging
+import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import AsyncGenerator
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
+from agents.action_planner import ActionPlanner
 from agents.analyst import AnalystAgent
 from agents.alert import AlertAgent
 from agents.memory import MemoryAgent
 from api.health import router as health_router
 from api.sessions import router as sessions_router
 from models.schemas import ContentType, ConversationEntry, ConversationRole, SessionStatus
+from services.desktop import execute_action
 from services.gemini_live import GeminiLiveService
 from services.session import SessionManager
 
@@ -42,6 +48,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     app.state.analyst = AnalystAgent()
     app.state.alert_agent = AlertAgent()
     app.state.memory = MemoryAgent()
+    app.state.action_planner = ActionPlanner()
     logger.info("Nexus backend started (agents initialized)")
     yield
     logger.info("Nexus backend shutting down")
@@ -68,6 +75,19 @@ app.add_middleware(
 
 app.include_router(health_router)
 app.include_router(sessions_router)
+
+# Serve built dashboard static files (when deployed)
+STATIC_DIR = Path(__file__).parent / "static"
+if STATIC_DIR.is_dir():
+    app.mount("/assets", StaticFiles(directory=str(STATIC_DIR / "assets")), name="static-assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        """Serve the SPA index.html for any non-API route."""
+        file_path = STATIC_DIR / full_path
+        if file_path.is_file():
+            return FileResponse(str(file_path))
+        return FileResponse(str(STATIC_DIR / "index.html"))
 
 
 # ---------------------------------------------------------------------------
@@ -119,6 +139,7 @@ async def _gemini_response_receiver(
                         )
                     except Exception:
                         logger.exception("Session %s: failed to store assistant response in memory", session_id)
+
                     text_buffer.clear()
 
                 manager.update_activity(session_id, SessionStatus.idle)
@@ -199,6 +220,7 @@ async def websocket_endpoint(ws: WebSocket, session_id: str) -> None:
     memory: MemoryAgent = app.state.memory
     analyst: AnalystAgent = app.state.analyst
     alert_agent: AlertAgent = app.state.alert_agent
+    action_planner: ActionPlanner = app.state.action_planner
     manager.create_session(session_id)
 
     gemini = GeminiLiveService()
@@ -270,6 +292,27 @@ async def websocket_endpoint(ws: WebSocket, session_id: str) -> None:
                         logger.exception("Session %s: failed to store user message in memory", session_id)
                     await gemini.send_text(data)
 
+                    # --- Action planning: if screen is shared, try to execute actions ---
+                    if last_frame[0] is not None:
+                        try:
+                            actions = await action_planner.plan_actions(last_frame[0], data)
+                            if actions:
+                                logger.info("Session %s: planned %d actions for: %s", session_id, len(actions), data[:60])
+                                for action in actions:
+                                    action_type = action.get("type", "unknown")
+                                    if action_type == "wait":
+                                        await asyncio.sleep(action.get("seconds", 1.0))
+                                    result = await execute_action(action)
+                                    await ws.send_json({
+                                        "type": "action_result",
+                                        "action": action_type,
+                                        "success": result["success"],
+                                        "message": result["message"],
+                                    })
+                                    logger.info("Session %s: action %s -> %s", session_id, action_type, result["message"])
+                        except Exception:
+                            logger.exception("Session %s: action planning failed for text: %s", session_id, data[:60])
+
                 elif msg_type == "end_of_turn":
                     manager.update_activity(session_id, SessionStatus.thinking)
 
@@ -296,3 +339,4 @@ async def websocket_endpoint(ws: WebSocket, session_id: str) -> None:
         await gemini.close()
         manager.update_activity(session_id, SessionStatus.idle)
         logger.info("Session %s: cleaned up", session_id)
+

@@ -54,7 +54,7 @@ class AnalystAgent:
         if not api_key:
             raise ValueError("GEMINI_API_KEY environment variable is not set")
         self._client = genai.Client(api_key=api_key)
-        self._model = "gemini-2.0-flash"
+        self._model = "gemini-2.5-flash"
 
     async def analyze_frame(self, frame_b64: str, context: str = "") -> dict:
         """Send a base64-encoded frame to Gemini for deep analysis.

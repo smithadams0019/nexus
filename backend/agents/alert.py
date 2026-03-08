@@ -54,7 +54,7 @@ class AlertAgent:
         if not api_key:
             raise ValueError("GEMINI_API_KEY environment variable is not set")
         self._client = genai.Client(api_key=api_key)
-        self._model = "gemini-2.0-flash"
+        self._model = "gemini-2.5-flash"
         self._check_interval = max(1, check_interval)
         self._frame_counter: int = 0
 

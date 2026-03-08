@@ -115,3 +115,33 @@ class MemoryEntry(BaseModel):
     context: str
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     ttl: Optional[int] = None
+
+
+# ---------------------------------------------------------------------------
+# Desktop action control
+# ---------------------------------------------------------------------------
+
+class ActionType(str, Enum):
+    click = "click"
+    double_click = "double_click"
+    type_text = "type"
+    hotkey = "hotkey"
+    scroll = "scroll"
+    move = "move"
+    screenshot = "screenshot"
+    wait = "wait"
+    open_url = "open_url"
+    open_app = "open_app"
+
+
+class DesktopAction(BaseModel):
+    type: str
+    x: int | None = None
+    y: int | None = None
+    button: str = "left"
+    text: str | None = None
+    keys: list[str] | None = None
+    amount: int | None = None
+    seconds: float | None = None
+    url: str | None = None
+    name: str | None = None
