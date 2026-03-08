@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { playAudioChunk } from '../lib/audioUtils';
+import { playAudioChunk, resetPlaybackSchedule } from '../lib/audioUtils';
 
 interface Message {
   id: string;
@@ -108,6 +108,7 @@ export const useNexusStore = create<NexusState>((set, get) => ({
           }
           case 'turn_complete': {
             set({ isAiSpeaking: false });
+            resetPlaybackSchedule();
             break;
           }
           case 'insight': {

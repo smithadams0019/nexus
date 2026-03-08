@@ -39,11 +39,9 @@ class GeminiLiveService:
         if not api_key:
             raise RuntimeError("GEMINI_API_KEY environment variable is not set")
 
-        self._client = genai.Client(
-            api_key=api_key,
-            http_options={"api_version": "v1alpha"},
-        )
+        self._client = genai.Client(api_key=api_key)
         self._session: types.AsyncSession | None = None
+        self._ctx_manager = None
         self._closed = False
 
     async def connect(self) -> None:
@@ -61,10 +59,11 @@ class GeminiLiveService:
                 )
             ),
         )
-        self._session = await self._client.aio.live.connect(
-            model="gemini-2.0-flash-live-001",
+        self._ctx_manager = self._client.aio.live.connect(
+            model="gemini-2.5-flash-native-audio-latest",
             config=config,
         )
+        self._session = await self._ctx_manager.__aenter__()
         logger.info("Gemini Live session connected")
 
     def _ensure_session(self) -> types.AsyncSession:
@@ -79,35 +78,29 @@ class GeminiLiveService:
     async def send_frame(self, frame_data: bytes) -> None:
         """Send a JPEG video frame to Gemini."""
         session = self._ensure_session()
-        frame_b64 = base64.b64encode(frame_data).decode()
-        await session.send(
-            input={
-                "media_chunks": [
-                    {"mime_type": "image/jpeg", "data": frame_b64}
-                ]
-            },
-            end_of_turn=False,
+        await session.send_realtime_input(
+            video=types.Blob(mime_type="image/jpeg", data=frame_data),
         )
         logger.debug("Sent video frame (%d bytes)", len(frame_data))
 
     async def send_audio(self, audio_data: bytes) -> None:
         """Send a PCM 16 kHz audio chunk to Gemini."""
         session = self._ensure_session()
-        audio_b64 = base64.b64encode(audio_data).decode()
-        await session.send(
-            input={
-                "media_chunks": [
-                    {"mime_type": "audio/pcm;rate=16000", "data": audio_b64}
-                ]
-            },
-            end_of_turn=False,
+        await session.send_realtime_input(
+            audio=types.Blob(mime_type="audio/pcm;rate=16000", data=audio_data),
         )
         logger.debug("Sent audio chunk (%d bytes)", len(audio_data))
 
     async def send_text(self, text: str) -> None:
         """Send a text message to Gemini, signalling end of turn."""
         session = self._ensure_session()
-        await session.send(input=text, end_of_turn=True)
+        await session.send_client_content(
+            turns=types.Content(
+                role="user",
+                parts=[types.Part(text=text)],
+            ),
+            turn_complete=True,
+        )
         logger.info("Sent text input: %s", text[:80])
 
     # ------------------------------------------------------------------
@@ -124,49 +117,50 @@ class GeminiLiveService:
         """
         session = self._ensure_session()
         try:
-            async for response in session.receive():
-                try:
-                    server_content = response.server_content
-                except AttributeError:
-                    continue
+            while not self._closed:
+                async for response in session.receive():
+                    try:
+                        server_content = response.server_content
+                    except AttributeError:
+                        continue
 
-                if server_content is None:
-                    continue
+                    if server_content is None:
+                        continue
 
-                # Process model turn parts (audio / text)
-                try:
-                    model_turn = server_content.model_turn
-                    if model_turn and model_turn.parts:
-                        for part in model_turn.parts:
-                            # Audio part
-                            try:
-                                if part.inline_data and part.inline_data.data:
-                                    audio_bytes = part.inline_data.data
-                                    if isinstance(audio_bytes, bytes):
-                                        audio_b64 = base64.b64encode(audio_bytes).decode()
-                                    else:
-                                        audio_b64 = audio_bytes
-                                    yield {"type": "audio", "data": audio_b64}
-                                    continue
-                            except AttributeError:
-                                pass
+                    # Process model turn parts (audio / text)
+                    try:
+                        model_turn = server_content.model_turn
+                        if model_turn and model_turn.parts:
+                            for part in model_turn.parts:
+                                # Audio part
+                                try:
+                                    if part.inline_data and part.inline_data.data:
+                                        audio_bytes = part.inline_data.data
+                                        if isinstance(audio_bytes, bytes):
+                                            audio_b64 = base64.b64encode(audio_bytes).decode()
+                                        else:
+                                            audio_b64 = audio_bytes
+                                        yield {"type": "audio", "data": audio_b64}
+                                        continue
+                                except AttributeError:
+                                    pass
 
-                            # Text part
-                            try:
-                                if part.text:
-                                    yield {"type": "text", "data": part.text}
-                                    continue
-                            except AttributeError:
-                                pass
-                except AttributeError:
-                    pass
+                                # Text part
+                                try:
+                                    if part.text:
+                                        yield {"type": "text", "data": part.text}
+                                        continue
+                                except AttributeError:
+                                    pass
+                    except AttributeError:
+                        pass
 
-                # Turn complete signal
-                try:
-                    if server_content.turn_complete:
-                        yield {"type": "turn_complete"}
-                except AttributeError:
-                    pass
+                    # Turn complete signal
+                    try:
+                        if server_content.turn_complete:
+                            yield {"type": "turn_complete"}
+                    except AttributeError:
+                        pass
 
         except Exception:
             if not self._closed:
@@ -180,11 +174,12 @@ class GeminiLiveService:
     async def close(self) -> None:
         """Close the Gemini Live session."""
         self._closed = True
-        if self._session is not None:
+        if self._ctx_manager is not None:
             try:
-                await self._session.close()
+                await self._ctx_manager.__aexit__(None, None, None)
                 logger.info("Gemini Live session closed")
             except Exception:
                 logger.warning("Error closing Gemini session", exc_info=True)
             finally:
                 self._session = None
+                self._ctx_manager = None

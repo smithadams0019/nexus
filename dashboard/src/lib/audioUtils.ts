@@ -1,27 +1,47 @@
+let nextPlayTime = 0;
+
 export function createAudioContext(): AudioContext {
+  nextPlayTime = 0;
   return new AudioContext({ sampleRate: 24000 });
 }
 
 export function playAudioChunk(ctx: AudioContext, base64Audio: string): void {
-  const binaryString = atob(base64Audio);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
+  try {
+    const binaryString = atob(base64Audio);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+
+    const int16Array = new Int16Array(bytes.buffer);
+    if (int16Array.length === 0) return;
+
+    const float32Array = new Float32Array(int16Array.length);
+    for (let i = 0; i < int16Array.length; i++) {
+      float32Array[i] = int16Array[i] / 32768.0;
+    }
+
+    const audioBuffer = ctx.createBuffer(1, float32Array.length, 24000);
+    audioBuffer.getChannelData(0).set(float32Array);
+
+    const source = ctx.createBufferSource();
+    source.buffer = audioBuffer;
+    source.connect(ctx.destination);
+
+    // Schedule chunks sequentially so they don't overlap
+    const now = ctx.currentTime;
+    if (nextPlayTime < now) {
+      nextPlayTime = now;
+    }
+    source.start(nextPlayTime);
+    nextPlayTime += audioBuffer.duration;
+  } catch (err) {
+    console.warn('Audio playback error:', err);
   }
+}
 
-  const int16Array = new Int16Array(bytes.buffer);
-  const float32Array = new Float32Array(int16Array.length);
-  for (let i = 0; i < int16Array.length; i++) {
-    float32Array[i] = int16Array[i] / 32768.0;
-  }
-
-  const audioBuffer = ctx.createBuffer(1, float32Array.length, 24000);
-  audioBuffer.getChannelData(0).set(float32Array);
-
-  const source = ctx.createBufferSource();
-  source.buffer = audioBuffer;
-  source.connect(ctx.destination);
-  source.start();
+export function resetPlaybackSchedule(): void {
+  nextPlayTime = 0;
 }
 
 export function createAudioWorkletProcessor(): string {

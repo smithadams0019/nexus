@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { Eye, Zap } from 'lucide-react';
+import { Eye, Zap, Loader } from 'lucide-react';
 import { useNexusStore } from '../store/nexusStore';
 import { useCamera } from '../hooks/useCamera';
 import { useAudio } from '../hooks/useAudio';
@@ -57,18 +57,22 @@ export function MainView() {
       const ctx = createAudioContext();
       setAudioContext(ctx);
 
-      startCamera(cameraMode);
+      startCamera(cameraMode).catch((err) => {
+        console.warn('Camera unavailable:', err.message);
+      });
       startMic((audioData) => {
         sendAudio(audioData);
+      }).catch((err) => {
+        console.warn('Mic unavailable:', err.message);
       });
 
-      // Send video frames every 1 second
+      // Send video frames every 2 seconds
       frameIntervalRef.current = setInterval(() => {
         const frame = captureFrame();
         if (frame) {
           sendFrame(frame);
         }
-      }, 1000);
+      }, 2000);
 
       return () => {
         if (frameIntervalRef.current) {
@@ -124,21 +128,30 @@ export function MainView() {
     connect();
   };
 
-  // Disconnected landing screen
-  if (status === 'disconnected') {
+  // Disconnected / connecting landing screen
+  if (status === 'disconnected' || status === 'connecting') {
     return (
-      <div className="h-full flex flex-col items-center justify-center px-6">
+      <div className="h-full flex flex-col items-center justify-center px-6 animate-gradient-bg">
         <div className="flex flex-col items-center max-w-sm w-full">
           {/* Logo */}
-          <div className="w-20 h-20 rounded-2xl bg-nexus-primary/10 border border-nexus-primary/20 flex items-center justify-center mb-6">
+          <div className="w-20 h-20 rounded-2xl bg-nexus-primary/10 border border-nexus-primary/20 flex items-center justify-center mb-6 relative">
             <Eye className="w-10 h-10 text-nexus-primary" />
+            {status === 'connecting' && (
+              <div className="absolute inset-0 rounded-2xl border-2 border-nexus-primary/40 border-t-nexus-primary animate-spin-slow" />
+            )}
           </div>
 
           <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Nexus</h1>
-          <p className="text-sm text-white/40 text-center mb-8 leading-relaxed">
+          <p className="text-sm text-white/40 text-center mb-6 leading-relaxed">
             Voice + Vision AI Copilot. Point your camera at anything and talk to get instant AI
             insights.
           </p>
+
+          {/* Powered by badge */}
+          <div className="flex items-center gap-1.5 mb-6 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
+            <span className="text-[10px] text-white/40 font-medium tracking-wide">Powered by</span>
+            <span className="text-[10px] text-nexus-primary font-bold tracking-wide">Gemini</span>
+          </div>
 
           {/* Feature pills */}
           <div className="flex flex-wrap gap-2 justify-center mb-8">
@@ -155,14 +168,29 @@ export function MainView() {
           {/* Connect button */}
           <button
             onClick={handleConnect}
-            className="w-full py-3.5 rounded-xl bg-nexus-primary hover:bg-nexus-primary/80 text-white font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+            disabled={status === 'connecting'}
+            className="w-full py-3.5 rounded-xl bg-nexus-primary hover:bg-nexus-primary/80 text-white font-semibold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            <Zap className="w-4 h-4" />
-            Start Session
+            {status === 'connecting' ? (
+              <>
+                <Loader className="w-4 h-4 animate-spin-slow" />
+                Connecting to Gemini...
+              </>
+            ) : (
+              <>
+                <Zap className="w-4 h-4" />
+                Start Session
+              </>
+            )}
           </button>
 
           <p className="text-[10px] text-white/20 mt-4 text-center">
             Requires camera and microphone access
+          </p>
+
+          {/* Version text */}
+          <p className="text-[10px] text-white/15 mt-8 text-center">
+            v0.1.0 — Built for Gemini Live Agent Challenge
           </p>
         </div>
       </div>
@@ -192,9 +220,35 @@ export function MainView() {
       <div className="flex-1 md:w-80 md:flex-none flex flex-col bg-nexus-dark border-t md:border-t-0 md:border-l border-nexus-border overflow-hidden">
         <StatusBar status={status} sessionId={sessionId} isStreaming={isStreaming} />
 
+        {/* AI speaking wave indicator */}
+        {isAiSpeaking && (
+          <div className="flex items-center justify-center gap-1 py-2 bg-nexus-primary/5 border-b border-nexus-border shrink-0">
+            <div className="flex items-center gap-[3px] h-4">
+              {[...Array(5)].map((_, i) => (
+                <div
+                  key={i}
+                  className="w-[3px] h-full bg-nexus-primary rounded-full animate-ai-wave-bar"
+                />
+              ))}
+            </div>
+            <span className="text-[10px] text-nexus-primary/80 font-medium ml-2">AI is speaking</span>
+          </div>
+        )}
+
+        {/* Mic active indicator */}
+        {!isMuted && status === 'connected' && !isAiSpeaking && (
+          <div className="flex items-center justify-center gap-2 py-1.5 bg-green-500/5 border-b border-nexus-border shrink-0">
+            <div className="relative flex items-center justify-center w-4 h-4">
+              <div className="absolute w-4 h-4 rounded-full bg-green-500/30 animate-mic-pulse-ring" />
+              <div className="w-2 h-2 rounded-full bg-green-500" />
+            </div>
+            <span className="text-[10px] text-green-400/70 font-medium">Listening</span>
+          </div>
+        )}
+
         {/* Tabs area with conversation and insights */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <ConversationLog messages={messages} />
+          <ConversationLog messages={messages} isAiSpeaking={isAiSpeaking} />
 
           {/* Insights section */}
           {insights.length > 0 && (

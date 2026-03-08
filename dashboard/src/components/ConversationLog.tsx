@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { MessageSquare } from 'lucide-react';
+import { Mic } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -10,6 +10,7 @@ interface Message {
 
 interface ConversationLogProps {
   messages: Message[];
+  isAiSpeaking: boolean;
 }
 
 function formatTime(ts: number): string {
@@ -17,18 +18,40 @@ function formatTime(ts: number): string {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-export function ConversationLog({ messages }: ConversationLogProps) {
+function TypingIndicator() {
+  return (
+    <div className="flex flex-col items-start">
+      <div className="max-w-[85%] px-3.5 py-3 rounded-2xl rounded-bl-md bg-nexus-surface border border-nexus-border flex items-center gap-1.5">
+        <div className="w-2 h-2 rounded-full bg-nexus-primary/60 animate-typing-dot" />
+        <div className="w-2 h-2 rounded-full bg-nexus-primary/60 animate-typing-dot" />
+        <div className="w-2 h-2 rounded-full bg-nexus-primary/60 animate-typing-dot" />
+      </div>
+    </div>
+  );
+}
+
+export function ConversationLog({ messages, isAiSpeaking }: ConversationLogProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, isAiSpeaking]);
 
   if (messages.length === 0) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center text-white/30 px-4 py-8">
-        <MessageSquare className="w-8 h-8 mb-3 opacity-50" />
-        <p className="text-sm text-center">Start talking — Nexus is listening...</p>
+      <div className="flex-1 flex flex-col items-center justify-center text-white/30 px-6 py-8">
+        <div className="w-12 h-12 rounded-full bg-nexus-primary/10 flex items-center justify-center mb-4">
+          <Mic className="w-5 h-5 text-nexus-primary/50" />
+        </div>
+        <p className="text-sm text-center font-medium text-white/30 mb-1">Nexus is listening</p>
+        <p className="text-xs text-center text-white/20 leading-relaxed max-w-[200px]">
+          Speak naturally or type a message. Point your camera at something to discuss it.
+        </p>
+        {isAiSpeaking && (
+          <div className="mt-4">
+            <TypingIndicator />
+          </div>
+        )}
       </div>
     );
   }
@@ -54,6 +77,7 @@ export function ConversationLog({ messages }: ConversationLogProps) {
           </span>
         </div>
       ))}
+      {isAiSpeaking && <TypingIndicator />}
       <div ref={bottomRef} />
     </div>
   );
